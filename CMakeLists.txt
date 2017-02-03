@@ -1,3 +1,7 @@
+# ==============================================================================
+#  CMake project settings
+# ==============================================================================
+
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 CMAKE_POLICY(SET CMP0048 NEW)
 
@@ -11,15 +15,17 @@ IF (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 	MESSAGE(FATAL_ERROR "Please run CMake in a separate directory.")
 ENDIF()
 
-#
-# Options
-#
-OPTION(GETOPT_LONG "Use getopt_long to parse arguments" ON)
-OPTION(USE_X11 "Support copying to the X11 clipboard" ON)
+# ==============================================================================
+#  Options
+# ==============================================================================
 
-#
+OPTION(GETOPT_LONG "Use getopt_long to parse arguments"   ON)
+OPTION(USE_X11     "Support copying to the X11 clipboard" ON)
+
+# ==============================================================================
 # Required CMake modules
-#
+# ==============================================================================
+
 INCLUDE(CheckIncludeFile)
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckTypeSize)
@@ -119,38 +125,44 @@ INCLUDE_DIRECTORIES(
 	${OPENSSL_INCLUDE_DIR}
 )
 
-#
-# Build executable
-#
-ADD_EXECUTABLE(
+# ==============================================================================
+#  Build application executable
+# ==============================================================================
+
+## compiler instructions
+add_executable(
 	pwsafe
 	pwsafe.cpp
 )
 
-#
-# Librarie
-#
+## linker instructions
 TARGET_LINK_LIBRARIES(
 	pwsafe
 	${OPENSSL_LIBRARIES}
 )
 
+## installation instructions
+install (
+    TARGETS pwsafe
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+)
+
 #
 # Tests - move .dat files into binary dir
 #
-FOREACH(datfile test.dat testv2.dat) 
+FOREACH(datfile test.dat testv2.dat)
 	ADD_CUSTOM_COMMAND(
-		OUTPUT "${CMAKE_BINARY_DIR}/${datfile}" 
+		OUTPUT "${CMAKE_BINARY_DIR}/${datfile}"
 		COMMAND
 			cmake -E copy
 				"${CMAKE_SOURCE_DIR}/${datfile}"
 			   	"${CMAKE_BINARY_DIR}/${datfile}"
 		DEPENDS
-			"${CMAKE_SOURCE_DIR}/${datfile}" 
-		) 
-	LIST(APPEND DATFILES "${CMAKE_BINARY_DIR}/${datfile}") 
+			"${CMAKE_SOURCE_DIR}/${datfile}"
+		)
+	LIST(APPEND DATFILES "${CMAKE_BINARY_DIR}/${datfile}")
 ENDFOREACH()
-ADD_CUSTOM_TARGET(datfiles ALL DEPENDS ${DATFILES}) 
+ADD_CUSTOM_TARGET(datfiles ALL DEPENDS ${DATFILES})
 
 ENABLE_TESTING()
 FOREACH (test read create edit merge)
